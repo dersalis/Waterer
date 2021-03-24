@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
 namespace Waterer.Api.Models
@@ -26,5 +27,7 @@ namespace Waterer.Api.Models
         [Required(ErrorMessage = "Rola jest wymagana")]
         [StringLength(40, ErrorMessage = "Rola nie moze być dłuzsza niz 40 znaków.")]
         public string Role { get; set; }
+
+        public ICollection<Plant> Plants { get; set; }
     }
 }

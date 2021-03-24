@@ -2,7 +2,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Waterer.Api.ViewModels
 {
-    public class NewUserViewModel
+    public class RegisterViewModel
     {
         [Required(ErrorMessage = "Nazwa jest wymagana.")]
         [StringLength(100, ErrorMessage = "Nazwa nie moze być dłuzsza niz 100 znaków.")]
