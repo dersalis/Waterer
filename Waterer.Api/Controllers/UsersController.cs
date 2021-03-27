@@ -58,7 +58,7 @@ namespace Waterer.Api.Controllers
             // Sprawdz czy uzytkownik istnieje
             var userFromDB = _context.Users.FirstOrDefault(u => u.Email == model.Email);
             // Jeśli uzytkownik nie istnieje
-            if(userFromDB == null) return NotFound("Błędny login lub hasło.");
+            if(userFromDB == null) return NotFound("Nie można odnaleźć konta z taką nazwą użytkownika.");
 
             // Sprawdz hasło
             if (!SecurePasswordHasherHelper.Verify(model.Password, userFromDB.Password))
@@ -91,14 +91,9 @@ namespace Waterer.Api.Controllers
         {
             // Sprawdz czy uzytkownik istnieje
             var userFromDB = _context.Users.FirstOrDefault(u => u.Email == model.Email);
-            // Jeśli uzytkownik nie istnieje
-            if(userFromDB == null) return NotFound("Uzytkownik nie istnieje.");
 
-            // Sprawdz stare hasło
-            if (!SecurePasswordHasherHelper.Verify(model.OldPassword, userFromDB.Password))
-            {
-                return NotFound("Zły login lub hasło.");
-            }
+            // Jeśli uzytkownik nie istnieje lub stare hasło jest nie poprawne
+            if(userFromDB == null || !SecurePasswordHasherHelper.Verify(model.OldPassword, userFromDB.Password)) return NotFound("Nie można odnaleźć konta z taką nazwą użytkownika.");
 
             // Zmień hasło
             userFromDB.Password = SecurePasswordHasherHelper.Hash(model.NewPassword);
