@@ -2,6 +2,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
 using System.Security.Claims;
 using AuthenticationPlugin;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
@@ -54,7 +55,7 @@ namespace Waterer.Api.Controllers
         [HttpPost("login")]
         public IActionResult Login([FromBody] LoginViewModel model)
         {
-            // 
+            // Sprawdz czy uzytkownik istnieje
             var userFromDB = _context.Users.FirstOrDefault(u => u.Email == model.Email);
             // Jeśli uzytkownik nie istnieje
             if(userFromDB == null) return NotFound("Błędny login lub hasło.");
@@ -82,6 +83,29 @@ namespace Waterer.Api.Controllers
                 expiration_Time = token.ValidTo,
                 user_id = userFromDB.Id,
             });
+        }
+
+        [Authorize]
+        [HttpPut("changepassword")]
+        public IActionResult ChangePassword([FromBody] ChangePasswordViewModel model)
+        {
+            // Sprawdz czy uzytkownik istnieje
+            var userFromDB = _context.Users.FirstOrDefault(u => u.Email == model.Email);
+            // Jeśli uzytkownik nie istnieje
+            if(userFromDB == null) return NotFound("Uzytkownik nie istnieje.");
+
+            // Sprawdz stare hasło
+            if (!SecurePasswordHasherHelper.Verify(model.OldPassword, userFromDB.Password))
+            {
+                return NotFound("Zły login lub hasło.");
+            }
+
+            // Zmień hasło
+            userFromDB.Password = SecurePasswordHasherHelper.Hash(model.NewPassword);
+
+            _context.SaveChanges();
+
+            return StatusCode(StatusCodes.Status201Created);
         }
     }
 }

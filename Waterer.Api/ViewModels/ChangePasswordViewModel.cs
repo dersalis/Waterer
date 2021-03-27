@@ -16,11 +16,11 @@ namespace Waterer.Api.ViewModels
         [Required(ErrorMessage = "Hasło jest wymagane.")]
         [StringLength(255, ErrorMessage = "Hasło musi być dłuzsze niz 8 znaków, ale krótsze od 255 znaków.", MinimumLength = 8)]
         [DataType(DataType.Password)]
-        public string Password { get; set; }
+        public string NewPassword { get; set; }
 
         [Required(ErrorMessage = "Hasło jest wymagane.")]
         [StringLength(255, ErrorMessage = "Hasło musi być dłuzsze niz 8 znaków, ale krótsze od 255 znaków.", MinimumLength = 8)]
-        [Compare("Password", ErrorMessage = "Hasło i potwierdzenie hasło muszą być równe.")]
-        public string ConfirmPassword { get; set; }
+        [Compare("NewPassword", ErrorMessage = "Hasło i potwierdzenie hasło muszą być równe.")]
+        public string ConfirmNewPassword { get; set; }
     }
 }
