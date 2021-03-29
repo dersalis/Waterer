@@ -27,19 +27,26 @@ namespace Waterer.Api.Controllers
         [HttpGet]
         public IActionResult GetAll(string sort, int? pageNumber, int? pageSize)
         {
-            var plants = _context.Plants.ToList();
-
-            var currPageNumber = pageNumber ?? 1;
-            var currPageSize = pageSize ?? plants.Count;
-
-            switch(sort)
+            try
             {
-                case "asc":
-                    return Ok(plants.OrderBy(p => p.Name));
-                case "desc":
-                    return Ok(plants.OrderBy(p => p.Name));
-                default:
-                    return Ok(plants);
+                var plants = _context.Plants.ToList();
+
+                var currPageNumber = pageNumber ?? 1;
+                var currPageSize = pageSize ?? plants.Count;
+
+                switch (sort)
+                {
+                    case "asc":
+                        return Ok(plants.OrderBy(p => p.Name));
+                    case "desc":
+                        return Ok(plants.OrderBy(p => p.Name));
+                    default:
+                        return Ok(plants);
+                }
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
             }
         }
 
@@ -49,60 +56,101 @@ namespace Waterer.Api.Controllers
         [HttpGet("[action]/{id}")]
         public IActionResult Details(int id)
         {
-            var plant = _context.Plants.Find(id);
-
-            if(plant == null) return NotFound("Nie można odnaleźć rośliny.");
-
-            var userName = _context.Users.Find(plant.UserId)?.Name;
-            var states = _context.plantStates.Where(s => s.PlantId == plant.Id).ToList();
-            var images = _context.plantImages.Where(i => i.PlantId == plant.Id).Select(p => p.Path).ToList();
-
-            var plantDetails = new PlantDetailsViewModel()
+            try
             {
-                Id = plant.Id,
-                Name = plant.Name,
-                UserName = userName,
-                States = states,
-                Images = images,
-            };
+                var plant = _context.Plants.Find(id);
 
-            return Ok(plantDetails);
+                if (plant == null) return NotFound("Nie można odnaleźć rośliny.");
+
+                var userName = _context.Users.Find(plant.UserId)?.Name;
+                var states = _context.PlantStatuses.Where(s => s.PlantId == plant.Id).Select(s => new PlantStatusViewModel
+                {
+                    Id = s.Id,
+                    Temperature = s.Temperature,
+                    Humidity = s.Humidity,
+                    CreateDate = s.CreateDate,
+                    PlantId = s.PlantId
+                }).ToList();
+                var images = _context.PlantImages.Where(i => i.PlantId == plant.Id).Select(p => p.Path).ToList();
+
+                var plantDetails = new PlantDetailsViewModel()
+                {
+                    Id = plant.Id,
+                    Name = plant.Name,
+                    UserName = userName,
+                    Statuses = states,
+                    Images = images,
+                };
+
+                return Ok(plantDetails);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
         }
 
 
         // POST api/plants
         [Authorize(Roles = "Admin")]
         [HttpPost]
-        public IActionResult Add([FromBody] PlantViewModel model)
+        public IActionResult Add([FromBody] PlantRequest request)
         {
-            var newPlant = new Plant()
+            // if (!ModelState.IsValid)
+            // {
+            //     var errors = ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage).ToArray();
+            //     return BadRequest(errors);
+            // }
+
+            try
             {
-                Name = model.Name,
-                CreateDate = DateTime.Now,
-                UserId = model.UserId
-            };
+                var newPlant = new Plant()
+                {
+                    Name = request.Name,
+                    CreateDate = DateTime.Now,
+                    UserId = request.UserId
+                };
 
-            _context.Plants.Add(newPlant);
-            _context.SaveChanges();
+                _context.Plants.Add(newPlant);
+                _context.SaveChanges();
 
-            return StatusCode(StatusCodes.Status201Created);
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
         // PUT api/plants/1
         [Authorize(Roles = "Admin")]
         [HttpPut("{id}")]
-        public IActionResult Update(int id, [FromBody] PlantViewModel model)
+        public IActionResult Update(int id, [FromBody] PlantRequest request)
         {
-            var plant = _context.Plants.Find(id);
-            // Jeśli nie znaleziono
-            if(plant == null) return NotFound("Nie można odnaleźć rośliny.");
+            // if (!ModelState.IsValid)
+            // {
+            //     var errors = ModelState.SelectMany(x => x.Value.Errors).Select(x => x.ErrorMessage).ToArray();
+            //     return BadRequest(errors);
+            // }
 
-            plant.Name = model.Name;
+            try
+            {
+                var plant = _context.Plants.Find(id);
+                // Jeśli nie znaleziono
+                if (plant == null) return NotFound("Nie można odnaleźć rośliny.");
 
-            _context.SaveChanges();
+                plant.Name = request.Name;
 
-            return Ok();
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
 
@@ -111,23 +159,30 @@ namespace Waterer.Api.Controllers
         [HttpDelete("{id}")]
         public IActionResult Delete(int id)
         {
-            var plant = _context.Plants.Find(id);
-            // Jeśli nie znaleziono
-            if(plant == null) return NotFound("Nie można odnaleźć rośliny.");
+            try
+            {
+                var plant = _context.Plants.Find(id);
+                // Jeśli nie znaleziono
+                if (plant == null) return NotFound("Nie można odnaleźć rośliny.");
 
-            // Usuń zdjęcia
-            var images = _context.plantImages.Where(i => i.PlantId == plant.Id);
-            if(images.Count() <= 0) _context.plantImages.RemoveRange(images);
-            
-            // Usuń statusy
-            var statuses = _context.plantStates.Where(s => s.PlantId == plant.Id);
-            if(statuses.Count() <= 0) _context.plantStates.RemoveRange(statuses);
+                // Usuń zdjęcia
+                var images = _context.PlantImages.Where(i => i.PlantId == plant.Id);
+                if (images.Count() <= 0) _context.PlantImages.RemoveRange(images);
 
-            _context.Plants.Remove(plant);
+                // Usuń statusy
+                var statuses = _context.PlantStatuses.Where(s => s.PlantId == plant.Id);
+                if (statuses.Count() <= 0) _context.PlantStatuses.RemoveRange(statuses);
 
-            _context.SaveChanges();
+                _context.Plants.Remove(plant);
 
-            return Ok();
+                _context.SaveChanges();
+
+                return Ok();
+            }
+            catch (System.Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }

@@ -9,7 +9,7 @@ namespace Waterer.Api.Data
 
         public DbSet<User> Users { get; set; }
         public DbSet<Plant> Plants { get; set; }
-        public DbSet<PlantState> plantStates { get; set; }
-        public DbSet<PlantImage> plantImages { get; set; }
+        public DbSet<PlantStatus> PlantStatuses { get; set; }
+        public DbSet<PlantImage> PlantImages { get; set; }
     }
 }

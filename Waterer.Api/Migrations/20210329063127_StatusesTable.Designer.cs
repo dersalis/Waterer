@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Waterer.Api.Data;
 
 namespace Waterer.Api.Migrations
 {
     [DbContext(typeof(WatererDBContext))]
-    partial class WatererDBContextModelSnapshot : ModelSnapshot
+    [Migration("20210329063127_StatusesTable")]
+    partial class StatusesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

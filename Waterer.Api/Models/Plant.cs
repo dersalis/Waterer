@@ -22,7 +22,7 @@ namespace Waterer.Api.Models
         
 
         public User User { get; set; }
-        public ICollection<PlantState> PlantStates { get; set; }
+        public ICollection<PlantStatus> PlantStatuses { get; set; }
         public ICollection<PlantImage> PlantImages { get; set; }
     }
 }
